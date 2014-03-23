@@ -8,9 +8,11 @@
       name="viewport"
       content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
     >
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css"/>
     <style>
       body {
-        font-family: Monospace;
+        /*font-family: Monospace;*/
         background-color: #f0f0f0;
         margin: 0px;
         overflow: hidden;
@@ -31,9 +33,27 @@
     </style>
   </head>
   <body>
+    <div id="myModal" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Serialization options</h4>
+          </div>
+          <div class="modal-body">
+            <p><textarea rows="30" style="width:100%"></textarea></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Clear and load</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
     <script src="js/libs/underscore.js"></script>
     <script src="js/libs/jquery-2.1.0.js"></script>
+    <script src="bootstrap/js/bootstrap.js"></script>
     <script src="js/libs/three.js"></script>
     <script src="js/loaders/ColladaLoader.js"></script>
     <script src="js/Detector.js"></script>

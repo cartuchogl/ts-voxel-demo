@@ -74,6 +74,33 @@ function createVoxelGui(container) {
   $(container).find(".tile").first().addClass("selected");
 }
 
+function createSerializer(container) {
+  var ele = $("<a class='btn btn-default'>menu</a>'");
+  ele.css({
+    position:'absolute',
+    top: '2.5em',
+    right: 32
+  });
+  ele.click(function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    $('#myModal').modal();
+    $("#myModal textarea").val(JSON.stringify(serialize()));
+    return false;
+  });
+  $(container).append(ele);
+}
+
+$(function(){
+  $("#myModal .modal-footer .btn-primary").click(function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    clearScene();
+    deserialize(JSON.parse($("#myModal textarea").val()));
+    return false;
+  });
+});
+
 init();
 animate();
 
@@ -91,14 +118,16 @@ function init() {
   info.style.width = '90%';
   info.style.textAlign = 'center';
   info.style.backgroundColor = '#ffffff';
+  info.style.borderRadius = '4px';
   info.innerHTML =
     '<strong>click</strong>: add voxel, '+
     '<strong>shift + click</strong>: remove voxel, '+
     '<strong>w, s, q, e</strong>: control camera, '+
-    '<strong>wheel</strong>: zoom '+;
+    '<strong>wheel</strong>: zoom';
   container.appendChild( info );
 
   createVoxelGui(container);
+  createSerializer(container);
 
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
   camera.position.y = 800;
