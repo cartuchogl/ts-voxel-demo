@@ -5,7 +5,8 @@ var camera, scene, renderer;
 var projector, plane, cube;
 var mouse2D, mouse3D, raycaster,
 rollOveredFace, isShiftDown = false,
-theta = 45 * 0.5, isCtrlDown = false;
+theta = 45 * 0.5, isCtrlDown = false, isWKeyDown = false, isSKeyDown = false,
+isEKeyDown = false, isQKeyDown = false;
 
 var rollOverMesh, rollOverMaterial;
 var voxelPosition = new THREE.Vector3();
@@ -14,6 +15,7 @@ var normalMatrix = new THREE.Matrix3();
 var cubeGeo, cubeMaterial;
 var currentMaterial;
 var i, intersector;
+var is_postprocessing=false;
 
 var zoom = 1000;
 
@@ -23,7 +25,8 @@ var voxels = [
   [0xfeb74c, 0x00ff80, "textures/square-outline-textured.png"],
   [0x00b74c, 0x00ff80, "textures/square-outline-textured2.png"],
   [0xffa72c, 0x00ff80, "textures/square-outline-textured3.png"],
-  [0xeeeeee, 0x00ff80, "textures/square-outline-textured4.png"]
+  [0xeeeeee, 0x00ff80, "textures/square-outline-textured4.png"],
+  [0xfeb74c, 0x00ff80, "textures/square-outline-textured5.png"]
 ];
 
 var materials = [];
@@ -64,7 +67,7 @@ function createVoxelGui(container) {
       top: top,
       left: 10
     });
-    top += 22;
+    top += 38;
     img.click(setCurrentMaterial(indx));
     $(container).append(img);
   });
@@ -74,6 +77,8 @@ function createVoxelGui(container) {
 init();
 animate();
 
+var composer;
+
 function init() {
 
   container = document.createElement( 'div' );
@@ -81,13 +86,16 @@ function init() {
 
   var info = document.createElement( 'div' );
   info.style.position = 'absolute';
+  info.style.margin = '0 5%';
   info.style.top = '10px';
-  info.style.width = '100%';
+  info.style.width = '90%';
   info.style.textAlign = 'center';
+  info.style.backgroundColor = '#ffffff';
   info.innerHTML =
     '<strong>click</strong>: add voxel, '+
     '<strong>shift + click</strong>: remove voxel, '+
-    '<strong>control</strong>: rotate';
+    '<strong>w, s, q, e</strong>: control camera, '+
+    '<strong>wheel</strong>: zoom '+;
   container.appendChild( info );
 
   createVoxelGui(container);
@@ -151,6 +159,37 @@ function init() {
   plane.visible = false;
   scene.add( plane );
 
+  var loader = new THREE.ColladaLoader();
+  loader.load( "models/test_Collada_DAE.DAE", function ( geometry, materials ) {
+
+    global_by_the_face = geometry.scene;
+
+    scene.add( global_by_the_face );
+
+    geometry.scene.scale.x = 5;
+    geometry.scene.scale.y = 5;
+    geometry.scene.scale.z = 5;
+
+    geometry.scene.rotation.x = -3.14/2;
+
+    geometry.scene.position.x = 25;
+    geometry.scene.position.z = 25;
+
+    // camera.lookAt(geometry.scene.children[0].children[1].position);
+
+    var skin = geometry.scene.children[1];
+
+    if ( skin.geometry.animation ) {
+
+      THREE.AnimationHandler.add( skin.geometry.animation );
+
+      var animation = new THREE.Animation( skin, skin.geometry.animation.name );
+      // animation.loop = false;
+      animation.play();
+
+    }
+  } );
+
   objects.push( plane );
 
   mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
@@ -162,11 +201,39 @@ function init() {
 
   var directionalLight = new THREE.DirectionalLight( 0xffffff );
   directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+
+  directionalLight.castShadow = true;
+        directionalLight.shadowMapWidth = 1024;
+        directionalLight.shadowMapHeight = 1024;
+        directionalLight.shadowMapDarkness = 0.95;
+        //directionalLight.shadowCameraVisible = true;
+
+        directionalLight.shadowCascade = true;
+        directionalLight.shadowCascadeCount = 3;
+        directionalLight.shadowCascadeNearZ = [ -1.000, 0.995, 0.998 ];
+        directionalLight.shadowCascadeFarZ  = [  0.995, 0.998, 1.000 ];
+        directionalLight.shadowCascadeWidth = [ 1024, 1024, 1024 ];
+        directionalLight.shadowCascadeHeight = [ 1024, 1024, 1024 ];
+
   scene.add( directionalLight );
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
   renderer.setClearColor( 0xf0f0ff );
   renderer.setSize( window.innerWidth, window.innerHeight );
+
+  // postprocessing
+
+        composer = new THREE.EffectComposer( renderer );
+        composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+        var effect = new THREE.ShaderPass( THREE.DotScreenShader );
+        effect.uniforms[ 'scale' ].value = 4;
+        // composer.addPass( effect );
+
+        // var effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+        // effect.uniforms[ 'amount' ].value = 0.0015;
+        effect.renderToScreen = true;
+        composer.addPass( effect );
 
   container.appendChild( renderer.domElement );
 
@@ -294,10 +361,20 @@ function onDocumentMouseDown( event ) {
   }
 }
 
+function upCamera(mul) {
+  var vector = new THREE.Vector3( 0, 0, -1 );
+  vector.applyQuaternion( camera.quaternion );
+  despx += vector.x*mul;
+  despy += vector.z*mul;
+}
+
 function onDocumentKeyDown( event ) {
 
   switch( event.keyCode ) {
-
+    case 81: isQKeyDown = true; break;
+    case 69: isEKeyDown = true; break;
+    case 83: isSKeyDown = true; break;
+    case 87: isWKeyDown = true; break;
     case 16: isShiftDown = true; break;
     case 17: isCtrlDown = true; break;
 
@@ -308,7 +385,10 @@ function onDocumentKeyDown( event ) {
 function onDocumentKeyUp( event ) {
 
   switch ( event.keyCode ) {
-
+    case 81: isQKeyDown = false; break;
+    case 69: isEKeyDown = false; break;
+    case 83: isSKeyDown = false; break;
+    case 87: isWKeyDown = false; break;
     case 16: isShiftDown = false; break;
     case 17: isCtrlDown = false; break;
 
@@ -331,7 +411,6 @@ function serialize() {
   var ret = [];
   _.each(objects,function(i){
     var type = i.material.name.slice(3);
-    console.log(type)
     if(type!=='') {
       ret.push({
         x:i.position.x/25,
@@ -382,6 +461,19 @@ function render() {
 
   }
 
+  if(isWKeyDown) {
+    upCamera(20);
+  }
+  if(isSKeyDown) {
+    upCamera(-20);
+  }
+  if(isEKeyDown) {
+    theta += 1.5;
+  }
+  if(isQKeyDown) {
+    theta -= 1.5;
+  }
+
   raycaster = projector.pickingRay( mouse2D.clone(), camera );
 
   var intersects = raycaster.intersectObjects( objects );
@@ -399,16 +491,21 @@ function render() {
 
   }
 
-  camera.position.x = 1400 * Math.sin( THREE.Math.degToRad( theta ) )+despx;
-  camera.position.z = 1400 * Math.cos( THREE.Math.degToRad( theta ) )+despy;
+  camera.position.x = 500 * Math.sin( THREE.Math.degToRad( theta ) )+despx;
+  camera.position.z = 500 * Math.cos( THREE.Math.degToRad( theta ) )+despy;
   camera.position.y = zoom;
 
   var kk = scene.position.clone();
   kk.x+=despx;
   kk.z+=despy;
+  kk.y = 37;
 
   camera.lookAt( kk );
 
-  renderer.render( scene, camera );
+  if(!is_postprocessing) {
+    renderer.render( scene, camera );
+  } else {
+    composer.render();
+  }
 
 }
