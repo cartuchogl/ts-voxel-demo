@@ -1,3 +1,11 @@
 # esea-ts-editor
 
-Info of prototype
+Work in progress voxel level editor.
+
+# TODO
+
+- Fix camera movement
+
+# LICENSE
+
+MIT
