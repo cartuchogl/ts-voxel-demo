@@ -1,0 +1,13 @@
+{
+    "name": "esea-ts-editor"
+  , "version": "0.1.0"
+  , "description": "Prototype of voxel editor"
+  , "private": true
+  , "author": {
+      "name": "cartuchogl"
+    , "email": "carlos@urbin.es"
+  }
+  , "dependencies": {
+      "express": "3.x"
+  }
+}

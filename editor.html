@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>three.js webgl - interactive - voxel painter</title>
+    <meta charset="utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    >
+    <style>
+      body {
+        font-family: Monospace;
+        background-color: #f0f0f0;
+        margin: 0px;
+        overflow: hidden;
+      }
+
+      #oldie { background-color: #ddd !important }
+
+      .tile {
+        border-radius: 2px;
+        border: 2px solid transparent;
+      }
+      .tile:hover {
+        border: 2px solid green;
+      }
+      .tile.selected {
+        border: 2px solid red;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script src="js/libs/underscore.js"></script>
+    <script src="js/libs/jquery-2.1.0.js"></script>
+    <script src="js/libs/three.js"></script>
+    <script src="js/Detector.js"></script>
+    <script src="js/libs/stats.js"></script>
+    <script src="js/app.js"></script>
+
+  </body>
+</html>
